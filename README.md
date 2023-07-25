@@ -1,5 +1,7 @@
-# SBOM CONTAINER IMAGES BLOGPOST
-This is a GitLab repository for the [blogpost](https://quip-amazon.com/rBeXAya61xMX/SBOM-blog-post-proposal) for Blog: Use SBOM to find container images containing vulnerable software that are running on your EKS cluster
+# Using SBOM to find vulnerable container images running on Amazon EKS clusters
+This repository contains Terraform code and artifacts for a solution to generate Software Bill of Materials (SBOM) for container images in Amazon Elastic Container Registry (Amazon ECR) and analyze SBOM data using Amazon Athena to identify container images running on Amazon Elastic Kubernetes Service (Amazon EKS) clusters that contain vulnerable software components.
+
+Please check the [Using SBOM to find vulnerable container images running on Amazon EKS clusters AWS Blogpost](https://aws.amazon.com/blogs/containers/using-sbom-to-find-vulnerable-container-images-running-on-amazon-eks-clusters/)
 
 ## Diagram
 ![diagram](assets/diagram.png)
@@ -16,9 +18,9 @@ What we’ll do:
 
 ### Deploy the solution architecture using Terraform
 
-* First clone the sample GitHub Repositoy[LINK]:
+* First clone this [GitHub Repositoy](https://github.com/aws-samples/amazon-eks-use-sbom-to-find-container-image-with-vulnerable-software.git):
 
-  * `git clone https://github.com/PUT_LINK`
+  * `git clone https://github.com/aws-samples/amazon-eks-use-sbom-to-find-container-image-with-vulnerable-software.git`
 
 In the root directory of the Git Repository:
 

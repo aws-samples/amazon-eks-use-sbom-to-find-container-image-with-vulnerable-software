@@ -241,15 +241,19 @@ Sample Screenshot:
 To avoid incurring future charges, delete the resources created for this solution by running the following commands:
 
 - Delete the Amazon EKS CronJob and associated resources
+
 `kubectl delete -f eks-image-discovery.yaml`
 
 - Delete the AWS IAM service account
+
 `eksctl delete iamserviceaccount --name image-discovery-job --namespace sbom-image-discovery --cluster <<your EKS cluster name>>`
 
 - Empty the Amazon S3 bucket created by Terraform for storing SBOM and running images files. If the bucket is not empty, then Terraform fails to delete the Amazon S3 bucket. Replace bucket name with the value from Terraform output. If you haven’t copied the bucket name, run terraform output command to view the outputs again.
+
 `aws s3 rm s3://<<Bucket name>> --recursive`
 
 - Destroy all resources created by Terraform
+
 `terraform destroy`
 
 

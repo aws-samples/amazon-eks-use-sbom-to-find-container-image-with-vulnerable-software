@@ -128,7 +128,7 @@ Into the next sections, let's delve into the powerful querying capabilities of A
 Remember, these examples merely scratch the surface. With Amazon Athena's robust SQL capabilities, you're encouraged to craft queries that fit your unique needs, leveraging the available SBOM data. This is not a limiting framework, but a jumping-off point to spark creativity and customization within your software supply chain management.
 
 
-**Vulnerability in a specific package - Search for specific package (without version)** 
+#### **Vulnerability in a specific package - Search for specific package (without version)** 
 
 Identifying container images that contain vulnerable packages is essential to maintaining a secure container environment. By utilizing the query below, security and development teams can quickly pinpoint and address any security issues present in their EKS cluster. This particular query allows users to input a package name with a wildcard character (%) and retrieve a list of all container images on their EKS cluster that contain a package with the specified name.
 
@@ -160,7 +160,7 @@ Sample Screenshot:
 ![diagram](assets/athena_screenshot_02.jpg)
 
 
-**Vulnerability in specific package and version - Search for specific package and version**
+#### **Vulnerability in specific package and version - Search for specific package and version**
 
 This sample query allows users to input a package name with a wildcard character (%) and retrieve a list of all container images on their EKS cluster that contain a package with the specified name. Copy the query from the example below, and replace the <PACKAGE_NAME> with a package name that you'd like to find out if any container image running on your EKS cluster exists (or not) in containers that you have generated the SBOM.
 
@@ -199,7 +199,7 @@ Sample Screenshot:
 ![diagram](assets/athena_screenshot_03.jpg)
 
 
-**Vulnerability across multiple packages - Search for images with multiple packages installed  (Use IN array on SQL)**
+#### **Vulnerability across multiple packages - Search for images with multiple packages installed  (Use IN array on SQL)**
 
 On occasion, users may need to search for multiple packages simultaneously, such as when a combination of packages creates a vulnerability or scenario that requires mitigation. This solution enables you to query for multiple package names across all the software bill of materials (SBOMs) generated from your container images. By searching for multiple packages at once, you can gain a more comprehensive view of your environment and identify any potential risks or issues. This approach can be particularly useful in large-scale deployments with complex software stacks.
 

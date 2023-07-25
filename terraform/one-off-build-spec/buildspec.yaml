@@ -1,0 +1,79 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - echo "Installing Syft..."
+      - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - export ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
+      - echo "Installing ORAS CLI"
+      - | 
+        if $ECR_PUSH == "true"; then
+          VERSION="1.0.0"
+          curl -LO "https://github.com/oras-project/oras/releases/download/v${VERSION}/oras_${VERSION}_linux_amd64.tar.gz"
+          mkdir -p oras-install/
+          tar -zxf oras_${VERSION}_*.tar.gz -C oras-install/
+          sudo mv oras-install/oras /usr/local/bin/
+          rm -rf oras_${VERSION}_*.tar.gz oras-install/
+        fi
+
+  build:
+    commands:
+      - 
+      - |
+         if [ "$ONE_OFF_SCAN_SETTINGS" != "ALL" ]; then
+          export REPO_LIST=$ONE_OFF_SCAN_SETTINGS
+         else
+          export REPO_LIST=$(aws ecr describe-repositories --no-paginate --query 'repositories[*].repositoryName' --output text)
+         fi
+      - |
+        for REPO_NAME in $REPO_LIST
+          do
+            echo "###STEP 1. GENERATING IMAGE_LIST FOR ALL IMAGES WITHIN A ECR RESPOSITORY"
+            export IMAGE_LIST=$(aws ecr describe-images     --repository-name $REPO_NAME | jq '[.imageDetails[] | select(.imageManifestMediaType == "application/vnd.docker.distribution.manifest.v2+json") | {imageTag: .imageTags[0], imageDigest: .imageDigest}]')
+            data=$(echo "$IMAGE_LIST" | jq -c '.[]')
+            
+            echo "###STEP 2. DOCKER LOGIN TO THAT SPECIFIC ECR REPOSITORY"
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com
+            
+            for row in $data
+            do
+            
+              IMAGETAG=$(echo "$row" | jq -r '.imageTag')
+              IMAGEDIGEST=$(echo "$row" | jq -r '.imageDigest')
+              
+              if [ "$IMAGETAG" = "null" ]; then
+                  IMAGETAG="@${IMAGEDIGEST}"
+                  URI=$ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME$IMAGETAG
+              else
+                  URI=$ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGETAG
+              fi
+              
+              echo THIS IS YOUR IMAGETAG = $IMAGETAG
+              
+              echo "###STEP 3A. DOCKER PULL IMAGE = $URI"
+              docker pull $URI
+              
+              echo "###STEP 3B. VERIFIES REPOSITORY NAME DOES NOT CONTAIN ILLEGAL / CHAR"
+              export REPO_FILE_NAME=$(echo "$REPO_NAME" | tr '/' '-') 
+              
+              echo "###STEP 3C. SYFT SBOM GENERATION OF $URI"
+              syft $URI -o spdx-json | jq -c "." > "$REPO_FILE_NAME-$IMAGETAG.json"
+              
+              echo "###STEP 3D. S3 PUT OBJECT $IMAGETAG.json"
+              aws s3 cp "$REPO_FILE_NAME-$IMAGETAG.json" s3://$S3_BUCKET_NAME/sbom/
+              
+              if $ECR_PUSH == "true"; then
+                echo "###STEP 3D. ATTACH SBOM TO ECR REPO"
+                oras attach --artifact-type "application/spdx+json" $URI "$IMAGETAG.json"
+              fi
+              
+            done
+          done
+
+artifacts:
+  files:
+    - "$IMAGETAG.json"
+

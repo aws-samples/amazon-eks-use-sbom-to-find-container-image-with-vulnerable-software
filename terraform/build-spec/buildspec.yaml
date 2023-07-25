@@ -1,0 +1,40 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws --version
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com
+      - echo "Installing Syft..."
+      - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - | 
+        if $ECR_PUSH == "true"; then
+          VERSION="1.0.0"
+          curl -LO "https://github.com/oras-project/oras/releases/download/v${VERSION}/oras_${VERSION}_linux_amd64.tar.gz"
+          mkdir -p oras-install/
+          tar -zxf oras_${VERSION}_*.tar.gz -C oras-install/
+          sudo mv oras-install/oras /usr/local/bin/
+          rm -rf oras_${VERSION}_*.tar.gz oras-install/
+        fi
+
+  build:
+    commands:
+      - echo "REPOSITORY_NAME = $REPOSITORY_NAME" 
+      - echo "IMAGE_TAG = $IMAGE_TAG" 
+      - echo "Pulling Docker image..."
+      - docker pull $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG
+      - docker image ls
+      - export REPOSITORY_FILE_NAME=$(echo "$REPOSITORY_NAME" | tr '/' '-') 
+      - echo "Analyzing Docker image with Syft..."
+      - syft $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG -o spdx-json | jq -c "." > "$REPOSITORY_FILE_NAME-$IMAGE_TAG.json"
+      - aws s3 cp "$REPOSITORY_FILE_NAME-$IMAGE_TAG.json" s3://$S3_BUCKET_NAME/sbom/
+      - |
+        if $ECR_PUSH == "true"; then
+          echo "###STEP 3D. ATTACH SBOM TO ECR REPO"
+          oras attach --artifact-type "application/spdx+json" $ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/$REPOSITORY_NAME:$IMAGE_TAG "$IMAGE_TAG.json" -v
+        fi
+
+artifacts:
+  files:
+    - "$IMAGE_TAG.json"

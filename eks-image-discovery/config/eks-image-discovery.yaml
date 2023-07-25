@@ -1,0 +1,57 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sbom-image-discovery
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: sbom-image-discovery
+  name: pods-list
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list"]
+---
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: image-discovery-job
+  namespace: sbom-image-discovery
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pods-list
+subjects:
+- kind: ServiceAccount
+  name: image-discovery-job
+  namespace: sbom-image-discovery
+roleRef:
+  kind: ClusterRole
+  name: pods-list
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  namespace: sbom-image-discovery
+  name: eks-image-discovery
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: image-discovery-job
+          containers:
+          - name: eks-image-discovery
+            image: <CRONJOB_IMAGE_URI>
+            env:
+            - name: S3_BUCKET_NAME
+              value: <BUCKET_NAME_FROM_TERRAFORM>
+            - name: EKS_CLUSTER_NAME
+              value: <EKS_CLUSTER_NAME>
+            imagePullPolicy: Always
+          restartPolicy: Never

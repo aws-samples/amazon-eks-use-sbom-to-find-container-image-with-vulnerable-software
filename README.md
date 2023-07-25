@@ -3,7 +3,7 @@ This repository contains Terraform code and artifacts for a solution to generate
 
 Please check the [Using SBOM to find vulnerable container images running on Amazon EKS clusters AWS Blogpost](https://aws.amazon.com/blogs/containers/using-sbom-to-find-vulnerable-container-images-running-on-amazon-eks-clusters/)
 
-# Table of Contents
+## Table of Contents
 1. [Diagram](#diagram)
 2. [Instructions](#instructions)
    1. [Deploy the solution architecture using Terraform](#deploy-the-solution-architecture-using-terraform)

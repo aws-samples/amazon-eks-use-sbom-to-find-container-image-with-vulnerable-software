@@ -4,13 +4,12 @@ This repository contains Terraform code and artifacts for a solution to generate
 Please check the [Using SBOM to find vulnerable container images running on Amazon EKS clusters AWS Blogpost](https://aws.amazon.com/blogs/containers/using-sbom-to-find-vulnerable-container-images-running-on-amazon-eks-clusters/)
 
 # Table of Contents
-1. [Using SBOM to find vulnerable container images running on Amazon EKS clusters](#using-sbom-to-find-vulnerable-container-images-running-on-amazon-eks-clusters) 
-2. [Diagram](#diagram)
-3. [Instructions](#instructions)
+1. [Diagram](#diagram)
+2. [Instructions](#instructions)
    1. [Deploy the solution architecture using Terraform](#deploy-the-solution-architecture-using-terraform)
    2. [Deploy the EKS cronjob](#deploy-the-eks-cronjob)
    3. [Populate the Glue catalog](#populate-the-glue-catalog)
-4. [Run sample Athena Query](#run-sample-athena-query)
+3. [Run sample Athena Query](#run-sample-athena-query)
    1. [Vulnerability in a specific package - Search for specific package (without version)](#vulnerability-in-a-specific-package---search-for-specific-package-without-version) 
    2. [Vulnerability in specific package and version - Search for specific package and version](#vulnerability-in-specific-package-and-version---search-for-specific-package-and-version)
 

@@ -10,12 +10,24 @@ data "local_file" "oneoff_buildspec_local" {
   filename = "${path.module}/../../one-off-build-spec/buildspec.yaml"
 }
 
+//create kms key for s3 bucket
+
+resource "aws_kms_key" "kms_key_s3" {
+  description             = "KMS key for s3"
+  deletion_window_in_days = 10
+  enable_key_rotation = true
+}
+
 // create ecr repo for EKS image discovery cronjob
 
 resource "aws_ecr_repository" "eks_cronjob_repo" {
   name                 = var.ecr_repo_name
   image_tag_mutability = "IMMUTABLE"
   force_delete         = true
+  encryption_configuration {
+    encryption_type = "KMS"
+    kms_key         = aws_kms_key.kms_key_s3.arn
+  }
 
   image_scanning_configuration {
     scan_on_push = true
@@ -24,7 +36,30 @@ resource "aws_ecr_repository" "eks_cronjob_repo" {
 
 // create s3 bucket for storing solution files
 resource "aws_s3_bucket" "s3_bucket" {
+  #checkov:skip=CKV2_AWS_61:lifecycle rule is not required
+  #checkov:skip=CKV2_AWS_62:event notification does not need to be enabled but can be
+  #checkov:skip=CKV_AWS_144:cross region replication is not required
+  #checkov:skip=CKV2_AWS_6:public access block is not required
+  #checkov:skip=CKV_AWS_18:access logging is not required for this example
   bucket_prefix = "${var.s3_bucket_name}-"
+}
+
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.s3_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "bucket" {
+  bucket = aws_s3_bucket.s3_bucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.kms_key_s3.arn
+      sse_algorithm     = "aws:kms"
+    }
+  }
 }
 
 // create folder for storing sbom files for container images
@@ -41,6 +76,8 @@ resource "aws_s3_object" "eks-running-images" {
 
 # Set up CodeBuild project to generate SBoM file
 resource "aws_codebuild_project" "codebuild_project" {
+  #checkov:skip=CKV_AWS_314:logging is not required for this sample
+  #checkov:skip=CKV_AWS_316:codebuild needs previlige mode to build containers
   name          = var.codebuild_project_name
   description   = "generate sbom for new images"
   build_timeout = "5"
@@ -54,6 +91,7 @@ resource "aws_codebuild_project" "codebuild_project" {
     compute_type    = "BUILD_GENERAL1_SMALL"
     image           = "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
     type            = "LINUX_CONTAINER"
+    #checkov:skip=CKV_AWS_316:codebuild needs previlige mode to build containers
     privileged_mode = true
 
     environment_variable {
@@ -66,6 +104,13 @@ resource "aws_codebuild_project" "codebuild_project" {
       value = "false"
     }
 
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "log-group"
+      stream_name = "log-stream"
+    }
   }
 
   source {
@@ -90,6 +135,7 @@ resource "aws_codebuild_project" "codebuild_project_oneoff" {
     compute_type    = "BUILD_GENERAL1_SMALL"
     image           = "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
     type            = "LINUX_CONTAINER"
+    #checkov:skip=CKV_AWS_316:codebuild needs previlige mode to build containers
     privileged_mode = true
 
     environment_variable {
@@ -105,6 +151,13 @@ resource "aws_codebuild_project" "codebuild_project_oneoff" {
     environment_variable {
        name = "ONE_OFF_SCAN_SETTINGS"
        value = var.one_off_scan_repo_settings
+    }
+  }
+
+  logs_config {
+    cloudwatch_logs {
+      group_name  = "log-group"
+      stream_name = "log-stream"
     }
   }
 

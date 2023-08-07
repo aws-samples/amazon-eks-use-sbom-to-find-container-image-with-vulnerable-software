@@ -1,5 +1,10 @@
 data "aws_caller_identity" "current" {}
 
+resource "aws_kms_key" "kms_key" {
+  description             = "KMS key for glue crawler"
+  deletion_window_in_days = 10
+  enable_key_rotation = true
+}
 resource "aws_glue_catalog_database" "sbom_db" {
   name = "sbom_db"
 }
@@ -8,6 +13,7 @@ resource "aws_glue_crawler" "sbom_crawler" {
   name          = "sbom_crawler"
   database_name = aws_glue_catalog_database.sbom_db.name
   role          = aws_iam_role.glue_crawler_role.arn
+  security_configuration = aws_glue_security_configuration.sbom_crawler.name
 
   s3_target {
     path = "s3://${var.s3_bucket_name}/sbom"
@@ -15,6 +21,27 @@ resource "aws_glue_crawler" "sbom_crawler" {
 
   s3_target {
     path = "s3://${var.s3_bucket_name}/eks-running-images"
+  }
+}
+
+resource "aws_glue_security_configuration" "sbom_crawler" {
+  name = "sbom_crawler"
+	
+  encryption_configuration {
+    cloudwatch_encryption {
+      cloudwatch_encryption_mode = "SSE-KMS"
+      kms_key_arn        = aws_kms_key.kms_key.arn
+    }
+
+    job_bookmarks_encryption {
+      job_bookmarks_encryption_mode = "CSE-KMS"
+      kms_key_arn        = aws_kms_key.kms_key.arn
+    }
+
+    s3_encryption {
+      kms_key_arn        = aws_kms_key.kms_key.arn
+      s3_encryption_mode = "SSE-KMS"
+    }
   }
 }
 

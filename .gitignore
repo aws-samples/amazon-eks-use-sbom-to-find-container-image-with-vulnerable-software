@@ -41,3 +41,6 @@ operations/variable-scripts/variable.json
 
 # Sentinel runtime directory
 .sentinel
+
+.terraform.lock.hcl
+*terraform.lock.hcl

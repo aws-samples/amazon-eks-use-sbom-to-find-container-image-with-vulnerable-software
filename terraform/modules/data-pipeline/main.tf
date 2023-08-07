@@ -5,6 +5,43 @@ resource "aws_kms_key" "kms_key" {
   deletion_window_in_days = 10
   enable_key_rotation = true
 }
+
+resource "aws_kms_key_policy" "kms_key_policy" {
+  key_id = aws_kms_key.kms_key.key_id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Id = "Enable Logs to use the key",
+    Statement = [
+      {
+        "Sid": "Enable IAM User Permissions",
+        "Effect": "Allow",
+        "Principal": {
+            "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        "Action": "kms:*",
+        "Resource": "*"
+      },
+      {
+        Sid    = "Allow use Logs for the use of key",
+        Effect = "Allow",
+        Principal = {
+          Service = "logs.us-east-1.amazonaws.com"
+        },
+        Action   = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
 resource "aws_glue_catalog_database" "sbom_db" {
   name = "sbom_db"
 }
@@ -80,6 +117,46 @@ resource "aws_iam_role_policy" "glue_s3_policy" {
         ]
         Effect   = "Allow"
         Resource = "arn:aws:s3:::${var.s3_bucket_name}*"
+      },
+      {
+        Action = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${var.s3_kms_key}"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "glue_logs_kms_policy" {
+  name = "glue_logs_kms_policy"
+  role = aws_iam_role.glue_crawler_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "logs:AssociateKmsKey"
+        ]
+        Effect = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${aws_kms_key.kms_key.arn}"
+        ]
       }
     ]
   })

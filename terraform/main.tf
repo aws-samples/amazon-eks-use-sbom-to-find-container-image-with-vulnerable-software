@@ -8,4 +8,5 @@ module "ecr-pipeline" {
 module "data-pipeline" {
   source         = "./modules/data-pipeline"
   s3_bucket_name = module.ecr-pipeline.s3_bucket_name_unique
+  s3_kms_key = module.ecr-pipeline.s3_kms_key_arn
 }

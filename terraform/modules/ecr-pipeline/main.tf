@@ -310,6 +310,15 @@ resource "aws_iam_role_policy" "codebuild_role_policy" {
           "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}",
           "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}/*"
         ]
+      },
+      {
+        Action = [
+          "kms:GenerateDataKey"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${aws_kms_key.kms_key_s3.arn}"
+        ]
       }
     ]
   })
@@ -330,6 +339,15 @@ resource "aws_iam_policy" "eks_irsa_policy" {
         ]
         Effect   = "Allow"
         Resource = "arn:aws:s3:::${aws_s3_bucket.s3_bucket.id}*"
+      },
+      {
+        Action = [
+          "kms:GenerateDataKey"
+        ]
+        Effect = "Allow"
+        Resource = [
+          "${aws_kms_key.kms_key_s3.arn}"
+        ]
       }
     ]
   })

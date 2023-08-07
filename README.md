@@ -98,9 +98,24 @@ We assume that you an existing EKS cluster and kubernetes CLI installed on your 
 ### Populate the Glue catalog
 
 * Navigate to CodeBuild service in AWS console. Go to on off codebuild project and start a new build
+
+![codebuild_01](assets/codebuild_screenshot_01.png)
+
 * Verify that CodeBuild job finishes successfully.
 * Navigate to S3 service in AWS console. Verify that CodeBuild job created SBOM files and EKS cronjob create list of running images file
+
+![s3_01](assets/s3_screenshot_01.png)
+
+![s3_02](assets/s3_screenshot_02.png)
+
 * Navigate to Glue service in AWS console. Go to crawlers and run the sbom carwler.
+
+![crawler_01](assets/gluecrawler_screenshot_01.png)
+
+* Wait for crawler to finish successfully. Once finished, navigate to Databases in the AWS Glue service console and select sbom_db. You should see two tables created in the database called sbom and eks_running_images.
+
+![database_01](assets/gluedatabase_screenshot_01.png)
+
 
 ### Run sample Athena Query
 
@@ -239,6 +254,9 @@ Sample Screenshot:
 ## Cleaning up
 
 To avoid incurring future charges, delete the resources created for this solution by running the following commands:
+- Navigate to the eks-image-discovery folder from the root of the repository.
+
+`cd eks-image-discovery`
 
 - Delete the Amazon EKS CronJob and associated resources
 
@@ -251,6 +269,16 @@ To avoid incurring future charges, delete the resources created for this solutio
 - Empty the Amazon S3 bucket created by Terraform for storing SBOM and running images files. If the bucket is not empty, then Terraform fails to delete the Amazon S3 bucket. Replace bucket name with the value from Terraform output. If you haven’t copied the bucket name, run terraform output command to view the outputs again.
 
 `aws s3 rm s3://<<Bucket name>> --recursive`
+
+
+- (OPTIONAL) If the command above fails indicating the error The bucket you tried to delete is not empty. You must delete all versions in the bucket you will need to run the following command to delete all versions of objects. Make sure you have jq tool installed on your environment:
+   - Delete all versions:
+
+`aws s3api list-object-versions --bucket <<Bucket name>> | jq '.Versions[] | select(.IsLatest!=true) | "aws s3api delete-object --bucket <<Bucket name>> --key \(.Key) --version-id \(.VersionId)"' | xargs -I {} sh -c {}`
+
+   - Delete all DeleteMarkers:
+
+`aws s3api list-object-versions --bucket <<Bucket name>> | jq '.DeleteMarkers[]? | "aws s3api delete-object --bucket <<Bucket name>> --key \(.Key) --version-id \(.VersionId)"' | xargs -I {} sh -c "{}"`
 
 - Destroy all resources created by Terraform
 

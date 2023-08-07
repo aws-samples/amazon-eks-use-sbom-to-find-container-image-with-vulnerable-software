@@ -13,6 +13,8 @@ Please check the [Using SBOM to find vulnerable container images running on Amaz
    1. [Vulnerability in a specific package - Search for specific package (without version)](#vulnerability-in-a-specific-package---search-for-specific-package-without-version) 
    2. [Vulnerability in specific package and version - Search for specific package and version](#vulnerability-in-specific-package-and-version---search-for-specific-package-and-version)
    3. [Vulnerability across multiple packages - Search for images with multiple packages installed  (Use IN array on SQL)](#vulnerability-across-multiple-packages---search-for-images-with-multiple-packages-installed--use-in-array-on-sql)
+4. [Cleaning up](#cleaning-up)
+5. [License](#license)
 
 ## Diagram
 ![diagram](assets/diagram.png)

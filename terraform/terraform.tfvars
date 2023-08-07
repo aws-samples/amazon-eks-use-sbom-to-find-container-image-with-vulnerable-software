@@ -1,5 +1,5 @@
 aws_region                  = "us-east-1"
 ecr_repo_name               = "eks-image-discovery"
 codebuild_project_name      = "sbom-codebuild-project"
-s3_bucket_name              = "sbom-bucket-june"
+s3_bucket_name              = "sbom-bucket"
 one_off_scan_repo_settings  = "ALL"

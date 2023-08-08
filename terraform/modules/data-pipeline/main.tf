@@ -1,5 +1,7 @@
 data "aws_caller_identity" "current" {}
 
+data "aws_region" "current" {}
+
 resource "aws_kms_key" "kms_key" {
   description             = "KMS key for glue crawler"
   deletion_window_in_days = 10
@@ -26,7 +28,7 @@ resource "aws_kms_key_policy" "kms_key_policy" {
         Sid    = "Allow use Logs for the use of key",
         Effect = "Allow",
         Principal = {
-          Service = "logs.us-east-1.amazonaws.com"
+          Service = "logs.${data.aws_region.current.name}.amazonaws.com"
         },
         Action   = [
           "kms:Encrypt",

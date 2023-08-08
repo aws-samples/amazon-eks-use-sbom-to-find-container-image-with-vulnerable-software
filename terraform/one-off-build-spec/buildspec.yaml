@@ -6,7 +6,7 @@ phases:
       - echo "Logging in to Amazon ECR..."
       - aws --version
       - echo "Installing Syft..."
-      - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v0.85.0
       - export ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
       - echo "Installing ORAS CLI"
       - | 

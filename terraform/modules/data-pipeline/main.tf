@@ -135,6 +135,8 @@ resource "aws_iam_role_policy" "glue_s3_policy" {
 }
 
 resource "aws_iam_role_policy" "glue_logs_kms_policy" {
+  #checkov:skip=CKV_AWS_290:only allowing "logs:AssociateKMSKey" to the loggroup the Glue service role creates
+  #checkov:skip=CKV_AWS_355:only allowing "logs:AssociateKMSKey" to the loggroup the Glue service role creates
   name = "glue_logs_kms_policy"
   role = aws_iam_role.glue_crawler_role.id
   policy = jsonencode({

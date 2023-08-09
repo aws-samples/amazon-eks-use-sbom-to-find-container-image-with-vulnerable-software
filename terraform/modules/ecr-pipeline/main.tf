@@ -11,8 +11,8 @@ data "local_file" "oneoff_buildspec_local" {
 }
 
 //create kms key for s3 bucket
-
 resource "aws_kms_key" "kms_key_s3" {
+  #checkov:skip=CKV2_AWS_64:Using default KMS policy
   description             = "KMS key for s3"
   deletion_window_in_days = 10
   enable_key_rotation = true
@@ -257,6 +257,7 @@ resource "aws_iam_role" "codebuild_role" {
 }
 
 resource "aws_iam_role_policy" "codebuild_role_policy" {
+  #checkov:skip=CKV_AWS_355:Required "*" for resoucres on ECR since the solution needs to go through ALL ECR repositories in the account
   name = "sbom_codebuild_policy"
   role = aws_iam_role.codebuild_role.id
 

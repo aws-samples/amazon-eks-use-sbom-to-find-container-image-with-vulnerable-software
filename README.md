@@ -272,16 +272,6 @@ To avoid incurring future charges, delete the resources created for this solutio
 
 `aws s3 rm s3://<<Bucket name>> --recursive`
 
-
-- (OPTIONAL) If the command above fails indicating the error The bucket you tried to delete is not empty. You must delete all versions in the bucket you will need to run the following command to delete all versions of objects. Make sure you have jq tool installed on your environment:
-   - Delete all versions:
-
-`aws s3api list-object-versions --bucket <<Bucket name>> | jq '.Versions[] | select(.IsLatest!=true) | "aws s3api delete-object --bucket <<Bucket name>> --key \(.Key) --version-id \(.VersionId)"' | xargs -I {} sh -c {}`
-
-   - Delete all DeleteMarkers:
-
-`aws s3api list-object-versions --bucket <<Bucket name>> | jq '.DeleteMarkers[]? | "aws s3api delete-object --bucket <<Bucket name>> --key \(.Key) --version-id \(.VersionId)"' | xargs -I {} sh -c "{}"`
-
 - Destroy all resources created by Terraform
 
 `terraform destroy`

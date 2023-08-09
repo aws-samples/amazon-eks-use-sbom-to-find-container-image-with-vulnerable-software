@@ -182,7 +182,7 @@ Sample Screenshot:
 
 This sample query allows users to input a package name with a wildcard character (%) and retrieve a list of all container images on their EKS cluster that contain a package with the specified name. Copy the query from the example below, and replace the <PACKAGE_NAME> with a package name that you'd like to find out if any container image running on your EKS cluster exists (or not) in containers that you have generated the SBOM.
 
-In our example, consider the deployed container "eks-image-discovery" in your EKS cluster, containing a package named "coreutils". To locate this package, you would append WHERE package.name LIKE '%coreutils%' to the end of your Athena query. This approach enhances the discoverability of any package within your ECR container images. The beauty of this solution is its utilization of SQL language, granting you flexibility to tailor your queries to your needs, based on the available SBOM and running EKS images. This makes it a powerful tool for understanding your software supply chain.
+In our example, consider the deployed container "eks-image-discovery" in your EKS cluster, containing a package named "boto3". To locate this package, you would append WHERE package.name LIKE '%boto3%' to the end of your Athena query. This approach enhances the discoverability of any package within your ECR container images. The beauty of this solution is its utilization of SQL language, granting you flexibility to tailor your queries to your needs, based on the available SBOM and running EKS images. This makes it a powerful tool for understanding your software supply chain.
 
 Sample Query:
 
@@ -203,9 +203,9 @@ FROM
   AND package.versionInfo LIKE '<PACKAGE_VERSION>'
 ```
 
-Incorporating SQL wildcards in your search for package versions can increase the flexibility of your query. For instance, if you need to find all versions that adhere to the format/version "v1.X", where X can be any value, you may utilize the following AND statement (as depicted in the last line above):
+Incorporating SQL wildcards in your search for package versions can increase the flexibility of your query. For instance, if you need to find all versions that adhere to the format/version "1.26.X", where X can be any value, you may utilize the following AND statement (as depicted in the last line above):
 
-`AND package.versionInfo LIKE 'v1.%'`
+`AND package.versionInfo LIKE '1.26.%'`
 
 Sample Output:
 ```

@@ -41,15 +41,10 @@ resource "aws_s3_bucket" "s3_bucket" {
   #checkov:skip=CKV_AWS_144:cross region replication is not required
   #checkov:skip=CKV2_AWS_6:public access block is not required
   #checkov:skip=CKV_AWS_18:access logging is not required for this example
+  #checkov:skip=CKV_AWS_21:versioning is not required as the files on S3 can be easily recreated from ECR and EKS. Also it would incur high costs due to generating new files every 5 mins.
   bucket_prefix = "${var.s3_bucket_name}-"
 }
 
-resource "aws_s3_bucket_versioning" "versioning" {
-  bucket = aws_s3_bucket.s3_bucket.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "bucket" {
   bucket = aws_s3_bucket.s3_bucket.id

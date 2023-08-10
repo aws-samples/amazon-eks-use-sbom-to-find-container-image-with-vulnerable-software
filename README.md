@@ -14,7 +14,8 @@ Please check the [Using SBOM to find vulnerable container images running on Amaz
    2. [Vulnerability in specific package and version - Search for specific package and version](#vulnerability-in-specific-package-and-version---search-for-specific-package-and-version)
    3. [Vulnerability across multiple packages - Search for images with multiple packages installed  (Use IN array on SQL)](#vulnerability-across-multiple-packages---search-for-images-with-multiple-packages-installed--use-in-array-on-sql)
 4. [Cleaning up](#cleaning-up)
-5. [License](#license)
+5. [Contributing](#contributing)
+6. [License](#license)
 
 ## Diagram
 ![diagram](assets/diagram.png)
@@ -276,6 +277,9 @@ To avoid incurring future charges, delete the resources created for this solutio
 
 `terraform destroy`
 
+# Contributing
+
+See [CONTRIBUTING](CONTRIBUTING.md#contributing-via-pull-requests) for more information.
 
 # License
 This library is licensed under the MIT-0 License. See the LICENSE file.
